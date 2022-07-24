@@ -62,6 +62,11 @@ const createUser = async function (req, res) {
             return res.status(400).send({ status: false, message: `${phone} phone is already used` })
         }
 
+        let saltRounds=8;
+        await bcrypt.hash(password, saltRounds).then(function(hash) {
+            data.password = hash;
+        });
+
         //generate salt to hash password
         //const salt = await bcrypt.genSalt(10);
         // now we set password to hashed password
