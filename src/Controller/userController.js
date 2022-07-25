@@ -1,18 +1,21 @@
 const userModel = require("../model/userModel");
 const validator = require("../validator/validator")
 const jwt = require('jsonwebtoken')
-
+const bcrypt = require("bcryptjs");
 const mongoose = require('mongoose');
-
+const AWS = require('../aws/aws')
 
 
 //=============================================User Register===============================================/
 const createUser = async function (req, res) {
     try {
-        if (!validator.isValidBody(body)) {
+        let data = req.body
+        let { fname, lname, email, password, phone, address } = data
+
+        if (!validator.isValidBody(data)) {
             return res.status(400).send({ status: false, msg: "User body should not be empty" });
         }
-        let { fname, lname, email, password, phone, address } = body
+
 
         if (!validator.isValid(fname)) {
             return res.status(400).send({ status: false, message: "fname should not be empty" })
@@ -44,21 +47,48 @@ const createUser = async function (req, res) {
         if (!validator.isValidNumber(phone)) {
             return res.status(400).send({ status: false, msg: "Invalid phone number  ( it has to start with +91-)" })
         }
+        if (!address) {
+            return res.status(400).send({ status: false, message: "Address is required" })
+        }
         let CheckEmail = await userModel.findOne({ email });
+
         if (CheckEmail) {
             return res.status(400).send({ status: false, message: ` ${email} mail is already registered` })
         }
         let CheckNumber = await userModel.findOne({ phone });
+
         if (CheckNumber) {
             return res.status(400).send({ status: false, message: `${phone} phone is already used` })
         }
 
 
-        
-    }
-    catch (error) {
-        return res.status(500).send({ status: false, message: error.message })
-    }
+
+         //generate salt to hash password
+        //const salt = await bcrypt.genSalt(10);
+        // now we set password to hashed password
+        //password = await bcrypt.hash(password, salt)
+        //let encryptPassword = await bcrypt.hash(password, 12)
+
+  
+
+
+
+        let files = req.files;
+        if (files && files.length > 0) {
+            let uploadedFileURL = await AWS.uploadFile(files[0]);
+            data.profileImage = uploadedFileURL
+        }
+        else {
+            return res.status(400).send({ status: false, message: "ProfileImage is Required" })
+        }
+        let savedData = await userModel.create(userData)
+
+        return res.status(201).send({ status: true, message: "User created successfully", data: savedData })
+
+
+    } catch (error) {
+    return res.status(500).send({ status: false, message: error.message })
+}
 };
 
 
@@ -85,16 +115,16 @@ const Login = async function (req, res) {
 
         if (!validator.isValid(password)) { return res.status(400).send({ status: false, message: "Password is Required" }); }
 
-        let hash = await userModel.findOne({email:email});
-        if(!hash){
-            return res.status(400).send({ status: false, message: "This email id not valid"});
+        let hash = await userModel.findOne({ email: email });
+        if (!hash) {
+            return res.status(400).send({ status: false, message: "This email id not valid" });
         }
         let compare = await bcrypt.compare(password, hash.password).then((res) => {
             return res
-          });
-      
-          if (!compare) {return res.status(400).send({ status: false, msg: "password not valid" });}
-       
+        });
+
+        if (!compare) { return res.status(400).send({ status: false, msg: "password not valid" }); }
+
 
         //create the jwt token 
         let token = jwt.sign({
@@ -105,7 +135,7 @@ const Login = async function (req, res) {
 
         res.setHeader("x-api-key", token);
 
-        return res.status(200).send({ status: true, message: "User login successfull", iat: new String(Date()),data:{ userId: hash._id.toString(), token }})
+        return res.status(200).send({ status: true, message: "User login successfull", iat: new String(Date()), data: { userId: hash._id.toString(), token } })
     }
     catch (err) {
         return res.status(500).send({ status: false, message: err.message });
@@ -134,6 +164,7 @@ const getUserDetails = async function (req, res) {
 };
 
 
-module.exports = { createUser,
-                  getUserDetails,Login
-                 };
+module.exports = {
+    createUser,
+    getUserDetails, Login
+};

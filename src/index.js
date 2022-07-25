@@ -2,7 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const route = require("./route");
-
+const multer= require("multer");
 const app = express();
 
 // express().use(express.json());
@@ -11,6 +11,12 @@ app.use(express.json());
 // app.use(bodyParser.urlencoded({extended:true}));
 // app.use(express.urlencoded({ extended: true }));
 
+
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use( multer().any())
 mongoose
   .connect(
     //Database name: "group-73-Database"
@@ -28,7 +34,7 @@ mongoose
 
 app.use("/", route);
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("Express running on PORT: " + (process.env.PORT || 3000));
+app.listen(process.env.PORT || 4000, () => {
+  console.log("Express running on PORT: " + (process.env.PORT || 4000));
 });
 
