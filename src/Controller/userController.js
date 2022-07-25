@@ -1,5 +1,8 @@
 const userModel = require("../model/userModel");
 const validator = require("../validator/validator")
+const jwt = require('jsonwebtoken')
+
+
 
 
 
@@ -57,3 +60,54 @@ const CreateUser = async function (req, res) {
         return res.status(500).send({ status: false, message: error.message })
     }
 };
+
+
+
+
+
+
+
+
+//================================loginuser===================================//
+
+
+
+
+const Login = async function (req, res) {
+    try {
+        let data = req.body
+        const { email, password } = data
+
+        /*----------------------------validations ----------------------------*/
+        if (!validator.isValidReqBody(data)) { return res.status(400).send({ status: false, msg: "Please provide user details" }) }
+
+        if (!validator.isValid(email)) { return res.status(400).send({ status: false, message: "Email is Required" }); }
+
+        if (!validator.isValid(password)) { return res.status(400).send({ status: false, message: "Password is Required" }); }
+
+        let hash = await userModel.findOne({email:email});
+        if(!hash){
+            return res.status(400).send({ status: false, message: "This email id not valid"});
+        }
+        let compare = await bcrypt.compare(password, hash.password).then((res) => {
+            return res
+          });
+      
+          if (!compare) {return res.status(400).send({ status: false, msg: "password not valid" });}
+       
+
+        //create the jwt token 
+        let token = jwt.sign({
+            userId: hash._id.toString(),
+            group: 10
+
+        }, "project5Group10", { expiresIn: "1d" });
+
+        res.setHeader("x-api-key", token);
+
+        return res.status(200).send({ status: true, message: "User login successfull", iat: new String(Date()),data:{ userId: hash._id.toString(), token }})
+    }
+    catch (err) {
+        return res.status(500).send({ status: false, message: err.message });
+    }
+}
