@@ -162,7 +162,58 @@ const getUserDetails = async function (req, res) {
         return res.status(500).send({ status: false, message: error.message });
     }
 };
+const update = async function (req, res) {
+    try {
+        if (!Object.keys(req.body) == 0) return res.status(400).status({ status: false, message: "please enter data to update" });
+        const { fname, lname, email, password, phone, profileImage, address } = req.body;
 
+        if (fname) {
+            if (!validator.isValid(fname)) return res.status(400).status({ status: false, message: "please enter data to update" });
+        }
+        if (lname) {
+            if (!validator.isValid(lname)) return res.status(400).status({ status: false, message: "please enter data to update" });
+        }
+        if (email) {
+            if (!validator.isValidEmail(email)) return res.status(400).status({ status: false, message: "please enter data to update" });
+        }
+        if (password) {
+            if (!validator.isValidPassword(password)) return res.status(400).status({ status: false, message: "please enter data to update" });
+        }
+        if (phone) {
+            if (!validator.isValidNumber(phone)) return res.status(400).status({ status: false, message: "please enter data to update" });
+        }
+        if (profileImage) {
+            if (!validator.isValid(profileImage)) return res.status(400).status({ status: false, message: "please enter data to update" });
+        }
+        if (Object.keys(address) == 0) {
+            if (address.shipping.street) {
+                if (!validator.isValid(address.shipping.street)) return res.status(400).status({ status: false, message: "please enter data to update" });
+            }
+            if (address.shipping.city) {
+                if (!validator.isValid(address.shipping.city)) return res.status(400).status({ status: false, message: "please enter data to update" });
+            }
+            if (address.shipping.pincode) {
+                if (!/^[1-9][0-9]{5}$/.test(address.shipping.pincode)) return res.status(400).status({ status: false, message: "please enter data to update" });
+            }
+            if (address.billing.street) {
+                if (!validator.isValid(address.billing.street)) return res.status(400).status({ status: false, message: "please enter data to update" });
+            }
+            if (address.billing.city) {
+                if (!validator.isValid(address.billing.city)) return res.status(400).status({ status: false, message: "please enter data to update" });
+            }
+            if (address.billing.pincode) {
+                if (!/^[1-9][0-9]{5}$/.test(address.billing.pincode)) return res.status(400).status({ status: false, message: "please enter data to update" });
+            }
+
+        }
+        const updatedData = await userModel.findOneAndUpdate({ _id: req.params.userId, isDeleted: false },
+            { fname: fname, lname: lname, email: email, password: password, phone: phone, address: address }, { new: true });
+        if (updatedData) return res.status(200).send({ status: true, message: "user data updated sucessfully", data: updatedData });
+        else return res.status(400).send({ status: false, message: "data can't be updated" });
+    } catch (err) {
+        return res.status(500).send({ status: true, message: err.message })
+    }
+}
 
 module.exports = {
     createUser,
