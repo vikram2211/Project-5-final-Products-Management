@@ -16,7 +16,6 @@ const createUser = async function (req, res) {
             return res.status(400).send({ status: false, msg: "User body should not be empty" });
         }
 
-
         if (!validator.isValid(fname)) {
             return res.status(400).send({ status: false, message: "fname should not be empty" })
         }
@@ -129,11 +128,11 @@ const Login = async function (req, res) {
         //create the jwt token 
         let token = jwt.sign({
             userId: hash._id.toString(),
-            group: 10
+            group: 8
 
-        }, "project5Group10", { expiresIn: "1d" });
+        }, "project5Group8", { expiresIn: "1d" });
 
-        res.setHeader("x-api-key", token);
+        res.setAuthorization  ("x-api-key", token);
 
         return res.status(200).send({ status: true, message: "User login successfull", iat: new String(Date()), data: { userId: hash._id.toString(), token } })
     }
