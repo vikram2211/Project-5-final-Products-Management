@@ -1,6 +1,4 @@
-# project-5
 #Radon
-
 ## Project - Products Management
 
 ### Key points
@@ -19,7 +17,6 @@
 
 
 ## FEATURE I - User
-
 ### Models
 - User Model
 ```yaml
