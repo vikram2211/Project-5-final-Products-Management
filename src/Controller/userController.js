@@ -10,7 +10,7 @@ const AWS = require('../aws/aws')
 const createUser = async function (req, res) {
     try {
         let data = JSON.parse(JSON.stringify(req.body));
-        let { fname, lname, email, password, phone } = data
+        let { fname, lname, email, password,address, phone } = data
        
 
         if (!validator.isValidBody(data)) {
@@ -29,29 +29,30 @@ const createUser = async function (req, res) {
             return res.status(400).send({ status: false, message: "Enter a valid E- mailID" })
         }
     
-        // if (!validator.isValidPassword(password)) {
-        //     return res.status(400).send({ status: false, message: "password is not valid password should contain  8 -12,one lower case and upper case letter with special character" })
-        // }
+        // validator.isValidPassword
+        if (!validator.isValidPassword(password)) {
+            return res.status(400).send({ status: false, message: "password is not valid password should contain  8 -12,one lower case and upper case letter with special character" })
+        }
         
         if (!validator.isValidNumber(phone)) {
             return res.status(400).send({ status: false, msg: "Invalid phone number  ( it has to start with +91-)" })
         }
        
-        // if (Object.keys(address)==0) {
-        //     return res.status(400).send({ status: false, message: "Address is required" })
-        // }
+        if (Object.keys(address)==0) {
+            return res.status(400).send({ status: false, message: "Address is required" })
+        }
 
-        // if (!validator.isValid(address.shipping.street)) return res.status(400).status({ status: false, message: "please enter street for shipping address" });
+        if (!validator.isValid(address.shipping.street)) return res.status(400).status({ status: false, message: "please enter street for shipping address" });
 
-        // if (!validator.isValid(address.shipping.city)) return res.status(400).status({ status: false, message:"please enter city for shipping address"  });
+        if (!validator.isValid(address.shipping.city)) return res.status(400).status({ status: false, message:"please enter city for shipping address"  });
 
-        // if (!/^[1-9][0-9]{5}$/.test(address.shipping.pincode)) return res.status(400).status({ status: false, message:  "please enter pincode for shipping address"  });
+        if (!/^[1-9][0-9]{5}$/.test(address.shipping.pincode)) return res.status(400).status({ status: false, message:  "please enter pincode for shipping address"  });
 
-        // if (!validator.isValid(address.billing.street)) return res.status(400).status({ status: false, message:"please enter street for billing address"  });
+        if (!validator.isValid(address.billing.street)) return res.status(400).status({ status: false, message:"please enter street for billing address"  });
 
-        // if (!validator.isValid(address.billing.city)) return res.status(400).status({ status: false, message:  "please enter city for billing address"  });
+        if (!validator.isValid(address.billing.city)) return res.status(400).status({ status: false, message:  "please enter city for billing address"  });
 
-        // if (!/^[1-9][0-9]{5}$/.test(address.billing.pincode)) return res.status(400).status({ status: false, message: "please enter pincode for billing address" });
+        if (!/^[1-9][0-9]{5}$/.test(address.billing.pincode)) return res.status(400).status({ status: false, message: "please enter pincode for billing address" });
 
         let CheckEmail = await userModel.findOne({ email });
 
@@ -63,7 +64,7 @@ const createUser = async function (req, res) {
         if (CheckNumber) {
             return res.status(400).send({ status: false, message: `${phone} phone is already used` })
         }
-        
+
         let saltRounds=8;
         await bcrypt.hash(password, saltRounds).then(function(hash) {
             data.password = hash;

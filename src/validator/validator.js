@@ -47,12 +47,12 @@ const isValidName = function (value) {
 // (?=.*[!@#$%^&*])	The string must contain at least one special character, but we are escaping reserved RegEx characters to avoid conflict
 // (?=.{8,})	The string must be eight characters or longer
 //^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})
-const isValidPassword = function (value) {
-    if (!(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{6,15})$/.test(value))) {
-        return false
-    }
-    return true
-};
+// const isValidPassword = function (value) {
+//     if (!(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{6,15})$/.test(value))) {
+//         return false
+//     }
+//     return true
+// };
 //validiation for  the pincode
 const isValidPincode = function (value) {
     if (!(/^\d{6}$/.test(value))) {
@@ -62,4 +62,5 @@ const isValidPincode = function (value) {
 };
 
 
-module.exports = { isValid, isValidBody, isValidEmail, isValidNumber, isValidName, isValidPassword, isValidPincode };
+module.exports = { isValid, isValidBody, isValidEmail, isValidNumber, isValidName, isValidPincode };
+// isValidPassword,
