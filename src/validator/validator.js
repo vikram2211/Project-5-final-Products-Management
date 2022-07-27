@@ -8,6 +8,10 @@ const isValid = function (value) {
     return true
 };
 
+const isValidObjectId = function (value) {
+    return mongoose.Types.ObjectId.isValid(value);
+  };
+  
 
 // VALIDATION for the request body is empty
 
@@ -34,6 +38,18 @@ const isValidNumber = function (value) {
     }
     return true
 };
+
+
+// valid price-
+const isValidPrice = function (value) {
+if(!(/^(?:0|[1-9]\d*)(?:\.(?!.*000)\d+)?$/.test(value))){
+
+    return false
+}
+return true
+};
+
+
 //valid type of name in request body
 const isValidName = function (value) {
     if (!(/^[A-Za-z ]+$/.test(value.trim()))) {
@@ -62,5 +78,5 @@ const isValidPincode = function (value) {
 };
 
 
-module.exports = { isValid, isValidBody, isValidEmail, isValidNumber, isValidName, isValidPincode };
+module.exports = { isValid, isValidObjectId,isValidBody, isValidEmail, isValidNumber, isValidName, isValidPincode,isValidPrice };
 // isValidPassword,
