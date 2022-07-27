@@ -5,12 +5,13 @@ const aws = require('../aws/aws');
 
 
 const createProduct = async function (req, res) {
-    let data = JSON.parse(JSON.stringify(req.body));
+  try {
+     let data = JSON.parse(JSON.stringify(req.body));
 
-    let  { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data;
-  price = JSON.parse(price);
-  installments = JSON.parse(installments)
-  isFreeShipping = JSON.parse(isFreeShipping)
+    let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data;
+    price = JSON.parse(price);
+    installments = JSON.parse(installments)
+    isFreeShipping = JSON.parse(isFreeShipping)
     if (!validator.isValid(title)) {
         return res.status(400).send({ status: false, message: " please give valid title ( in string)" })
     }
@@ -32,13 +33,22 @@ const createProduct = async function (req, res) {
         }
     }
     if (style) {
-        if (typeof (style) != "string"|| style.trim().length==0) {
+        if (typeof (style) != "string" || style.trim().length == 0) {
             return res.status(400).send({ status: false, message: " please give value in string " })
         }
     }
-    if(!(availableSizes=="S" || availableSizes=='XS' || availableSizes=='M' || availableSizes=='L' || availableSizes=='X' || availableSizes=='XL' || availableSizes=='XXL')) {
-        return res.status(400).send({ status: false, message:'please choose size from "S", "XS","M","X", "L","XXL", "XL"' })
-    }
+   
+    if (validator.isValid(availableSizes)) {
+        availableSizes = availableSizes.trim().split(",").map(availableSizes => availableSizes.trim())
+        for (let i = 0; i < availableSizes.length; i++) {
+            if (!(availableSizes[i] == "S" || availableSizes[i] == 'XS' || availableSizes[i] == 'M' ||
+                availableSizes[i] == 'L' || availableSizes[i] == 'X' || availableSizes[i] == 'XL' || availableSizes[i] == 'XXL')) {
+                return res.status(400).send({ status: false, message: `please choose size from S, XS,M,X, L,XXL, XL ` })
+            }
+        }
+    }else return res.status(400).send({ status: false, message: " please give availableSizes ( S, XS,M,X, L,XXL, XL ) " })
+ data.availableSizes = availableSizes;
+
     if (installments) {
         if (typeof (installments) != "number") {
             return res.status(400).send({ status: false, message: " please give value in number format " })
@@ -54,7 +64,9 @@ const createProduct = async function (req, res) {
     }
     const createdProduct = await productModel.create(data);
     return res.status(201).send({ status: true, message: "User created successfully", data: createdProduct });
-
+}catch(err) {
+    return res.status(500).send({ status:false, message: err.message})
+}
 }
 
 
