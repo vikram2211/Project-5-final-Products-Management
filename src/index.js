@@ -19,7 +19,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use( multer().any())
 mongoose
   .connect(
-    //Database name: "group-73-Database"
     "mongodb+srv://vikram2211:niI4v8Tkxl2drjiN@cluster0.iufwb.mongodb.net/group-8-Database?retryWrites=true&w=majority",
     {
       useNewUrlParser: true,
@@ -34,7 +33,7 @@ mongoose
 
 app.use("/", route);
 
-app.listen(process.env.PORT || 4000, () => {
-  console.log("Express running on PORT: " + (process.env.PORT || 4000));
+app.listen(process.env.PORT || 3000, () => {
+  console.log("Express running on PORT: " + (process.env.PORT || 3000));
 });
 
