@@ -96,7 +96,22 @@ const getProductDetails = async function (req, res) {
 
 
 
-const getProductsById = async function (req, res) {
+
+    
+const getProductById = async function (req, res) {
+    try {
+      const productId = req.params.productId
+  if (!validator.isValidObjectId(productId)) return res.status(400).send({ status: false, message: "Invalid productId" })
+  
+      
+      const productData = await productModel.findOne({ _id: productId, isDeleted: false })
+  
+      if (!productData) return res.status(404).send({ status: false, message: "product is not found or product is deleted" })
+      return res.status(200).send({ status: true, message: "success", data: productData })
+    } catch (err) {
+      res.status(500).send({ status: false, message: err.message })
+  
+    }
 
 }
 
@@ -104,8 +119,28 @@ const updateProductById = async function (req, res) {
 
 }
 
-const deleteProductById = async function (req, res) {
 
+    const deleteProduct = async function (req, res) {
+        let productId = req.params.productId;
+      
+      
+        if (validator.isValidObjectId(productId)) return res.status(400).send({ status: false, message: "Invalid productId" })
+      
+        let alreadyDeleted = await productModel.findById(productId)
+        if (!alreadyDeleted) return res.status(404).send({ status: false, msg: "Data not found" })
+        if (alreadyDeleted.isDeleted == false) {
+      
+          let deletePro = await productModel.findOneAndUpdate(
+            { _id: productId, isDeleted: false },
+            { isDeleted: true, deletedAt: new String(Date()) }, { new: true }
+          );
+      
+          return res.status(200).send({ status: true, message: "product deleted successfully", data: deletePro });
+        } else {
+          return res.status(400).send({ status: false, message: "product is already deleted" });
+        }
+      };
 }
 
-module.exports = { createProduct, getProductDetails, getProductsById, updateProductById, deleteProductById };
+module.exports = { createProduct, getProductDetails, getProductById,  deleteProduct,updateProductById }
+
