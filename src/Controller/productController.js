@@ -59,8 +59,42 @@ const createProduct = async function (req, res) {
 
 
 const getProductDetails = async function (req, res) {
+    try {
 
-}
+        let filterdata = req.query
+        let { size, name, priceGreaterThan, priceLessThan } = filterdata
+        let condition = { isDeleted: false };
+
+
+        if (size) { condition.availableSize = size }
+        
+        if (name) { condition.title = name }
+
+        if (priceGreaterThan) { condition.price = { $gt :priceGreaterThan }}
+
+        if (priceLessThan) { condition.price ={ $lt : priceLessThan} }
+
+        let getProducts = await productModel.find(condition).sort({ price: 1 });
+
+        if (getProducts.length == 0) return res.status(404).send({ status: false, message: "no products found" })
+
+        return res.status(200).send({ status: true, count: getProduct, data: getProducts })
+
+
+
+        //     let getAllproduct = await productModel.find(query).sort({price:-1||1})
+        //     if(!(getAllproduct.lenght>0)){
+        //         return res.status(404).send({status:false,message:"No product found with the details"})
+        //     }
+        //     return res.status(200).send({status:true,message:"Success", data:getAllproduct})
+    } catch (err) {
+        res.status(500).send({ status: false, error: err.message });
+    }
+
+
+
+
+
 
 const getProductsById = async function (req, res) {
 
