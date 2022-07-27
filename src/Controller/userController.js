@@ -3,7 +3,7 @@ const validator = require("../validator/validator")
 const jwt = require('jsonwebtoken')
 const bcrypt = require("bcryptjs");
 const mongoose = require('mongoose');
-const AWS = require('../aws/aws')
+const aws = require('../aws/aws');
 
 
 //=============================================User Register===============================================/
@@ -29,9 +29,9 @@ const createUser = async function (req, res) {
             return res.status(400).send({ status: false, message: "Enter a valid E- mailID" })
         }
     
-        // if (!validator.isValidPassword(password)) {
-        //     return res.status(400).send({ status: false, message: "password is not valid password should contain  8 -12,one lower case and upper case letter with special character" })
-        // }
+        if (!validator.isValidPassword(password)) {
+            return res.status(400).send({ status: false, message: "password is not valid password should contain  8 -12,one lower case and upper case letter with special character" })
+        }
         
         if (!validator.isValidNumber(phone)) {
             return res.status(400).send({ status: false, msg: "Invalid phone number  ( it has to start with +91-)" })
@@ -76,7 +76,7 @@ const createUser = async function (req, res) {
 
         let files = req.files;
         if (files && files.length > 0) {
-            let uploadedFileURL = await AWS.uploadFile(files[0]);
+            let uploadedFileURL = await aws.uploadFile(files[0]);
             data.profileImage = uploadedFileURL
         }
         else {
