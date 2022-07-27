@@ -12,7 +12,7 @@ router.put("/user/:userId/profile",userController.update);
 
 // API-Product
 
-// router.post("/products",productController.createProduct);
+router.post("/products",productController.createProduct);
 // router.get("/products",productController.getProductDetails);
 // router.get("/products/:productId",productController.getProductsById);
 // router.put("/products/:productId",productController.updateProductById);

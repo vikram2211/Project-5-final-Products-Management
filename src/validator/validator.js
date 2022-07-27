@@ -76,6 +76,11 @@ const isValidPincode = function (value) {
     }
     return true
 };
+const isValidPassword = (value) =>{
+    if (typeof value === "undefined" || value === null) return false
+    const re = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,16}$/
+    return re.test(value)
+}
 
 
 module.exports = { isValid, isValidObjectId,isValidBody, isValidEmail, isValidNumber, isValidName, isValidPincode,isValidPrice };
