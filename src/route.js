@@ -2,13 +2,15 @@ const express = require("express");
 const router = express.Router()
 const userController = require("../src/controller/userController");
 const productController = require("../src/controller/productController");
+const {authentication,Authorization} = require("../src/middleware/auth");
+
 
 // API-User
 
 router.post("/register", userController.createUser);
 router.post("/login", userController.login);
-router.get("/user/:userId/profile", userController.getUserDetails);
-router.put("/user/:userId/profile", userController.update);
+router.get("/user/:userId/profile", authentication,userController.getUserDetails);
+router.put("/user/:userId/profile",authentication,Authorization,userController.update);
 
 // API-Product
 

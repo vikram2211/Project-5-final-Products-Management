@@ -11,7 +11,7 @@ const createProduct = async function (req, res) {
         let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data;
          price = JSON.parse(price);
          installments = JSON.parse(installments)
-        // isFreeShipping = JSON.parse(isFreeShipping)
+         isFreeShipping = JSON.parse(isFreeShipping)
         if (!validator.isValid(title)) {
             return res.status(400).send({ status: false, message: " please give valid title ( in string)" })
         }
