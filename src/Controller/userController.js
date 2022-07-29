@@ -10,7 +10,7 @@ const aws = require('../aws/aws');
 const createUser = async function (req, res) {
     try {
         let data = JSON.parse(JSON.stringify(req.body));
-        let { fname, lname, email, password, phone } = data
+        let { fname, lname, email, password, phone,address} = data
        
 
         if (!validator.isValidBody(data)) {
@@ -22,7 +22,7 @@ const createUser = async function (req, res) {
         }
      
         if (!validator.isValid(lname)) {
-            return res.status(400).send({ status: false, message: "lname should not be emptyt" })
+            return res.status(400).send({ status: false, message: "lname should not be empty" })
         }
 
         if (!validator.isValidEmail(email)) {
@@ -37,21 +37,33 @@ const createUser = async function (req, res) {
             return res.status(400).send({ status: false, msg: "Invalid phone number  ( it has to start with +91-)" })
         }
        
-        // if (Object.keys(address)==0) {
-        //     return res.status(400).send({ status: false, message: "Address is required" })
-        // }
+    //    try{
+        // address = JSON.parse(address)
+        if (Object.keys(address)==0) {
+            return res.status(400).send({ status: false, message: "Address is required" })
+        }
 
-        // if (!validator.isValid(address.shipping.street)) return res.status(400).status({ status: false, message: "please enter street for shipping address" });
+        if (!Object.keys(address.shipping)==3){ return res.status(400).send({ status: false, message: "Shipping address is required" })}
 
-        // if (!validator.isValid(address.shipping.city)) return res.status(400).status({ status: false, message:"please enter city for shipping address"  });
+        if (!Object.keys(address.billing)==3){ return res.status(400).send({ status: false, message: "billing address is required" })}
+    
+    
 
-        // if (!/^[1-9][0-9]{5}$/.test(address.shipping.pincode)) return res.status(400).status({ status: false, message:  "please enter pincode for shipping address"  });
+        if (!validator.isValid(address.shipping.street)) return res.status(400).status({ status: false, message: "please enter street for shipping address" });
 
-        // if (!validator.isValid(address.billing.street)) return res.status(400).status({ status: false, message:"please enter street for billing address"  });
+        if (!validator.isValid(address.shipping.city)) return res.status(400).status({ status: false, message:"please enter city for shipping address"  });
 
-        // if (!validator.isValid(address.billing.city)) return res.status(400).status({ status: false, message:  "please enter city for billing address"  });
+        if (!/^[1-9][0-9]{5}$/.test(address.shipping.pincode)) return res.status(400).status({ status: false, message:  "please enter pincode for shipping address"  });
 
-        // if (!/^[1-9][0-9]{5}$/.test(address.billing.pincode)) return res.status(400).status({ status: false, message: "please enter pincode for billing address" });
+        if (!validator.isValid(address.billing.street)) return res.status(400).status({ status: false, message:"please enter street for billing address"  });
+
+        if (!validator.isValid(address.billing.city)) return res.status(400).status({ status: false, message:  "please enter city for billing address"  });
+
+        if (!/^[1-9][0-9]{5}$/.test(address.billing.pincode)) return res.status(400).status({ status: false, message: "please enter pincode for billing address" });
+    // } 
+    // catch(error){ 
+    //     return res.status(400).send({ status: false, message: "catch address is not given" })
+    // }
 
         let CheckEmail = await userModel.findOne({ email });
 
@@ -100,7 +112,7 @@ const login = async function (req, res) {
         const { email, password } = data
 
         /*----------------------------validations ----------------------------*/
-        if (!validator.isValidReqBody(data)) { return res.status(400).send({ status: false, msg: "Please provide user details" }) }
+        if (!validator.isValidBody(data)) { return res.status(400).send({ status: false, msg: "Please provide user details" }) }
 
         if (!validator.isValidEmail(email)) { return res.status(400).send({ status: false, message: "Email is Required" }); }
 
@@ -124,9 +136,9 @@ const login = async function (req, res) {
 
         }, "project5Group8", { expiresIn: "1d" });
 
-        res.setHeaders("x-api-key", token);
+        // res.setHeaders("x-api-key", token);
 
-        return res.status(200).send({ status: true, message: "User login successfull", iat: new String(Date()), data: { userId: hash._id.toString(), token } })
+        return res.status(200).send({ status: true, message: "User login successfull", iat: new String(Date()), data: { userId: checkEmail._id.toString(), token } })
     }
     catch (err) {
         return res.status(500).send({ status: false, message: err.message });
@@ -137,18 +149,20 @@ const login = async function (req, res) {
 const getUserDetails = async function (req, res) {
     try {
         const user = req.params.userId;
-        if (validator.isValidObjectId(user)) {
+        if (!validator.isValidObjectId(user)) {
             res.status(400).send({ status: false, message: "Invalid UserId" })
         }
         if (!user) {
-            res.status(400).send({ status: false, message: "pleaze give userId in params" })
+            res.status(400).send({ status: false, message: "please give userId in params" })
         }
 
-        const findUser = await userModel.find({ _id: user }).select({ address: 1, _id: 1, fname: 1, lname: 1, email: 1, profileImage: 1, phone: 1, password: 1 });
+        const findUser = await userModel.find({ _id: user }).select({ address: 1, _id: 1, fname: 1, lname: 1, email: 1, profileImage: 1, phone: 1, password: 1 })
 
         if (findUser) {
-            res.status(200).send({ status: true, message: "User profile details", data: findUser })
-        }
+            return res.status(200).send({ status: true, message: "User profile details", data: findUser })
+        }else{
+          return  res.status(404).send({ status: false, message: "no user found"})}
+
     } catch (error) {
         return res.status(500).send({ status: false, message: error.message });
     }
@@ -158,8 +172,12 @@ const getUserDetails = async function (req, res) {
 
 const update = async function (req, res) {
     try {
-        if (!Object.keys(req.body) == 0) return res.status(400).status({ status: false, message: "please enter data to update" });
-        const { fname, lname, email, password, phone, profileImage, address } = req.body;
+        
+        let user = req.params.userId;
+         let data = JSON.parse(JSON.stringify(req.body));
+        // let data = req.body;
+        if (!validator.isValidBody(data)) return res.status(400).status({ status: false, message: "please enter data to update" });
+        let { fname, lname, email, password, phone, profileImage, address } = req.body;
 
         if (fname) {
             if (!validator.isValid(fname)) return res.status(400).status({ status: false, message: "please enter data to update" });
@@ -169,16 +187,31 @@ const update = async function (req, res) {
         }
         if (email) {
             if (!validator.isValidEmail(email)) return res.status(400).status({ status: false, message: "please enter data to update" });
+            
+            let checkEmail = await userModel.findOne({email})
+            if(checkEmail){
+                return res.status(400).send({status:false,message:"email already exist."})
+            }
         }
         if (password) {
             if (!validator.isValidPassword(password)) return res.status(400).status({ status: false, message: "please enter data to update" });
+            let saltRounds=8;
+            await bcrypt.hash(password, saltRounds).then(function(hash) {
+                password = hash;
+            });
         }
         if (phone) {
             if (!validator.isValidNumber(phone)) return res.status(400).status({ status: false, message: "please enter data to update" });
+
+            let checkPhone = await userModel.findOne({phone})
+            if(checkPhone){
+                return res.status(400).send({status:false,message:"phone number already exist."})
+            }
         }
         if (profileImage) {
             if (!validator.isValid(profileImage)) return res.status(400).status({ status: false, message: "please enter data to update" });
         }
+        if(address)
         if (Object.keys(address) == 0) {
             if (address.shipping.street) {
                 if (!validator.isValid(address.shipping.street)) return res.status(400).status({ status: false, message: "please enter data to update" });
@@ -200,7 +233,7 @@ const update = async function (req, res) {
             }
 
         }
-        const updatedData = await userModel.findOneAndUpdate({ _id: req.params.userId, isDeleted: false },
+        const updatedData = await userModel.findOneAndUpdate({ _id: user, isDeleted: false },
             { fname: fname, lname: lname, email: email, password: password, phone: phone, address: address }, { new: true });
         if (updatedData) return res.status(200).send({ status: true, message: "user data updated sucessfully", data: updatedData });
         else return res.status(400).send({ status: false, message: "data can't be updated" });

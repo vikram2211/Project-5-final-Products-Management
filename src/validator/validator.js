@@ -83,5 +83,5 @@ const isValidPassword = (value) =>{
 }
 
 
-module.exports = { isValid, isValidObjectId,isValidBody, isValidEmail, isValidNumber, isValidName, isValidPincode,isValidPrice };
+module.exports = { isValid, isValidObjectId,isValidBody,isValidPassword, isValidEmail, isValidNumber, isValidName, isValidPincode,isValidPrice };
 // isValidPassword,
