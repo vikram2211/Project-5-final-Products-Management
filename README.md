@@ -483,8 +483,3 @@ Refer below sample
   createdAt: "2021-09-17T04:25:07.803Z",
   updatedAt: "2021-09-17T04:25:07.803Z",
 }
-<<<<<<< HEAD
-```
-=======
-```
->>>>>>> d7b7dd091d280ef53b14449d89309af101c5d44e

@@ -2,15 +2,31 @@ const userModel = require("../model/userModel");
 const validator = require("../validator/validator")
 const jwt = require('jsonwebtoken')
 const bcrypt = require("bcryptjs");
-const mongoose = require('mongoose');
 const aws = require('../aws/aws');
 
 
 //=============================================User Register===============================================/
 const createUser = async function (req, res) {
     try {
-        let data = JSON.parse(JSON.stringify(req.body));
-        let { fname, lname, email, password, phone } = data
+        // let data;
+        // let files = req.files;
+        // if (files && files.length > 0) {
+        //     let uploadedFileURL = await aws.uploadFile(files[0]);
+        //     data.profileImage = uploadedFileURL
+        // }
+        // else {
+        //     return res.status(400).send({ status: false, message: "ProfileImage is Required" })
+        // }
+        // data = req.body;
+        // let { fname, lname, email, password, phone,address } = data
+        let files = req.files
+        if (!files) {
+            return res.status(400).send({ status: false, message: "Profile Image is required" })
+        }
+
+        let userImage = await aws.uploadFile(files[0]);
+        let data = req.body;
+        let { fname, lname, email, phone, password, address } = data
        
 
         if (!validator.isValidBody(data)) {
@@ -36,22 +52,23 @@ const createUser = async function (req, res) {
         if (!validator.isValidNumber(phone)) {
             return res.status(400).send({ status: false, msg: "Invalid phone number  ( it has to start with +91-)" })
         }
-       
-        // if (Object.keys(address)==0) {
-        //     return res.status(400).send({ status: false, message: "Address is required" })
-        // }
+       address.shipping= JSON.parse(address.shipping)
+       if(address)
+        if (Object.keys(address).length==0) {
+            return res.status(400).send({ status: false, message: "Address is required" })
+        }
 
-        // if (!validator.isValid(address.shipping.street)) return res.status(400).status({ status: false, message: "please enter street for shipping address" });
+        if (!validator.isValid(address.shipping.street)) return res.status(400).status({ status: false, message: "please enter street for shipping address" });
 
-        // if (!validator.isValid(address.shipping.city)) return res.status(400).status({ status: false, message:"please enter city for shipping address"  });
+        if (!validator.isValid(address.shipping.city)) return res.status(400).status({ status: false, message:"please enter city for shipping address"  });
 
-        // if (!/^[1-9][0-9]{5}$/.test(address.shipping.pincode)) return res.status(400).status({ status: false, message:  "please enter pincode for shipping address"  });
+        if (!/^[1-9][0-9]{5}$/.test(address.shipping.pincode)) return res.status(400).status({ status: false, message:  "please enter pincode for shipping address"  });
 
-        // if (!validator.isValid(address.billing.street)) return res.status(400).status({ status: false, message:"please enter street for billing address"  });
+        if (!validator.isValid(address.billing.street)) return res.status(400).status({ status: false, message:"please enter street for billing address"  });
 
-        // if (!validator.isValid(address.billing.city)) return res.status(400).status({ status: false, message:  "please enter city for billing address"  });
+        if (!validator.isValid(address.billing.city)) return res.status(400).status({ status: false, message:  "please enter city for billing address"  });
 
-        // if (!/^[1-9][0-9]{5}$/.test(address.billing.pincode)) return res.status(400).status({ status: false, message: "please enter pincode for billing address" });
+        if (!/^[1-9][0-9]{5}$/.test(address.billing.pincode)) return res.status(400).status({ status: false, message: "please enter pincode for billing address" });
 
         let CheckEmail = await userModel.findOne({ email });
 
@@ -74,14 +91,7 @@ const createUser = async function (req, res) {
         //password = await bcrypt.hash(password, salt)
         //let encryptPassword = await bcrypt.hash(password, 12)
 
-        let files = req.files;
-        if (files && files.length > 0) {
-            let uploadedFileURL = await aws.uploadFile(files[0]);
-            data.profileImage = uploadedFileURL
-        }
-        else {
-            return res.status(400).send({ status: false, message: "ProfileImage is Required" })
-        }
+       
         let savedData = await userModel.create(data)
 
         return res.status(201).send({ status: true, message: "User created successfully", data: savedData })

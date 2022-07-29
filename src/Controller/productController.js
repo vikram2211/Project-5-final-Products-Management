@@ -142,7 +142,7 @@ const getProduct = async function (req, res) {
             if (!/^[0-9 .]+$/.test(filter.priceGreaterThan)) return res.status(400).send({ status: false, message: "priceGreaterThan must be in numeric" })
         }
 
-        const query1 = await constructQuery(filter); // line-164
+        const query1 =  constructQuery(filter); // line-164
         let data = await productModel.find({ ...query, ...query1 }).collation({ locale: "en", strength: 2 }).sort({ price: filter.priceSort });
 
         if (data.length == 0) {
@@ -155,12 +155,12 @@ const getProduct = async function (req, res) {
     }
 };
 
-const constructQuery = async (filter) => {
+const constructQuery =  (filter) => {
     if (filter.priceGreaterThan && filter.priceLessThan) {
         return {
             $and: [
-                { price: { $gt: filter.priceGreaterThan, $lt: filter.priceLessThan } },
-            ],
+                { price: { $gt: filter.priceGreaterThan, $lt: filter.priceLessThan} },
+            ]
         };
     } else if (filter.priceGreaterThan) {
         return { price: { $gt: filter.priceGreaterThan } };
@@ -177,16 +177,16 @@ const deleteProduct = async function (req, res) {
 
     if (!validator.isValidObjectId(productId)) return res.status(400).send({ status: false, message: "Invalid productId" })
 
-    let alreadyDeleted = await productModel.findById(productId)
-    if (!alreadyDeleted) return res.status(404).send({ status: false, msg: "Data not found" })
-    if (alreadyDeleted.isDeleted == false) {
+    let productToBeDeleted = await productModel.findById(productId)
+    if (!productToBeDeleted) return res.status(404).send({ status: false, msg: "Data not found" })
+    if (productToBeDeleted.isDeleted == false) {
 
-        let deletePro = await productModel.findOneAndUpdate(
+        let deletedProduct = await productModel.findOneAndUpdate(
             { _id: productId, isDeleted: false },
             { isDeleted: true, deletedAt: new String(Date()) }, { new: true }
         );
 
-        return res.status(200).send({ status: true, message: "product deleted successfully", data: deletePro });
+        return res.status(200).send({ status: true, message: "product deleted successfully", data: deletedProduct });
     } else {
         return res.status(400).send({ status: false, message: "product is already deleted" });
     }
@@ -210,7 +210,7 @@ const updateProduct = async function (req, res) {
 
         let { title, description, price, currencyId, currencyFormat, style, installments } = data
 
-        if (!validator.isValidReqBody(data)) { return res.status(400).send({ status: false, msg: "Please enter data for update" }) }
+        if (!validator.isValidBody(data)) { return res.status(400).send({ status: false, msg: "Please enter data for update" }) }
         if (title)
             if (!validator.isValid(title)) return res.status(400).send({ status: false, message: "title  must be alphabetic characters" })
         let isTitlePresent = await productModel.findOne({ title })
@@ -252,7 +252,7 @@ const updateProduct = async function (req, res) {
         }
 
         let updatedData = await productModel.findOneAndUpdate({ _id: productId }, data, { new: true });
-        return res.status(200).send({ status: true, message: "product details updated", data: updatedData, });
+        return res.status(200).send({ status: true, message: "product details updated", data: updatedData});
     } catch (err) {
         return res.status(500).send({ status: false, error: err.message });
     }
