@@ -23,9 +23,9 @@ router.delete("/products/:productId", productController.deleteProduct);
 
 // API-Cart
 
-router.post("/users/:userId/cart", cartController.createCart);
-router.get("/users/:userId/cart ", cartController.updateCart);
+// router.post("/users/:userId/cart", cartController.createCart);
+// router.get("/users/:userId/cart ", cartController.updateCart);
 router.put("/users/:userId/cart", cartController.getCartDetails);
-router.delete("/users/:userId/cart", cartController.deleteCart);
+// router.delete("/users/:userId/cart", cartController.deleteCart);
 
 module.exports = router;
