@@ -36,9 +36,7 @@ const Authorization = async function (req, res, next) {
     try {
 
         let token = req.token
-
         let userId = req.params.userId
-
         let decodedToken = jwt.decode(token, "project5Group8")
 
         // check the user id present in body
@@ -48,10 +46,8 @@ const Authorization = async function (req, res, next) {
         if (!validator.isValidObjectId(userId)) return res.status(400).send({ status: false, message: "userId is not valid" });
 
         //check the  user id are present in decoded token
-        let User = await userModel.findById(userId)
-
+        let User = await userModel.findOne({_id:userId,isDeleted:false})
         if (!User) return res.status(404).send({ status: false, msg: "User not exist" })
-
         if (userId != decodedToken.userId) { return res.status(401).send({ status: false, msg: "Not Authorised!!" }) }
 
         next()

@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
-const cartSchema = new mongoose.Schema(
-
-    {
-
-
-        userId: {
+const cartSchema = new mongoose.Schema({
+ userId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
@@ -30,7 +26,7 @@ const cartSchema = new mongoose.Schema(
             type: Number,
             required: true
         },                          // comment: "Holds total number of items in the cart"
-
+        isDeleted: {type:Boolean, default: false},
     }, { timestamps: true })
 
 
