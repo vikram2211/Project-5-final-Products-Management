@@ -57,7 +57,7 @@ const updateCart = async function (req, res) {
             checkCartExist.items.splice(index, 1)
         }
         checkCartExist.totalItems = checkCartExist.items.length
-        checkCartExist.save()
+       await checkCartExist.save()
     }
     return res.status(200).send({ status: true, message: "Data updated successfuly", data: checkCartExist })
 }
