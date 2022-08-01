@@ -9,9 +9,9 @@ const createProduct = async function (req, res) {
         let data = JSON.parse(JSON.stringify(req.body));
 
         let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data;
-        price = JSON.parse(price);
-        installments = JSON.parse(installments)
-        isFreeShipping = JSON.parse(isFreeShipping)
+         price = JSON.parse(price);
+         installments = JSON.parse(installments)
+         isFreeShipping = JSON.parse(isFreeShipping)
         if (!validator.isValid(title)) {
             return res.status(400).send({ status: false, message: " please give valid title ( in string)" })
         }
@@ -75,13 +75,13 @@ const createProduct = async function (req, res) {
 const getProductById = async function (req, res) {
     try {
         const productId = req.params.productId
-        if (!validator.isValidObjectId(productId)) return res.status(400).send({ status: false, message: "Invalid productId" })
+        if (!validator.isValidObjectId(productId)) return res.status(400).send({ status: false, message: "please give a valid productId" })
 
 
-        const productData = await productModel.findOne({ _id: productId, isDeleted: false })
+        const product = await productModel.findOne({ _id: productId, isDeleted: false })
 
-        if (!productData) return res.status(404).send({ status: false, message: "product is not found or product is deleted" })
-        return res.status(200).send({ status: true, message: "success", data: productData })
+        if (!product) return res.status(404).send({ status: false, message: "product is not found." })
+        return res.status(200).send({ status: true, message: "success", data: product })
     } catch (err) {
         res.status(500).send({ status: false, message: err.message })
 
@@ -175,7 +175,7 @@ const deleteProduct = async function (req, res) {
     let productId = req.params.productId;
 
 
-    if (!validator.isValidObjectId(productId)) return res.status(400).send({ status: false, message: "Invalid productId" })
+    if (!validator.isValidObjectId(productId)) return res.status(400).send({ status: false, message: "please give a valid productId" })
 
     let productToBeDeleted = await productModel.findById(productId)
     if (!productToBeDeleted) return res.status(404).send({ status: false, msg: "Data not found" })
@@ -201,24 +201,24 @@ const updateProduct = async function (req, res) {
         let data = req.body;
 
         if (!validator.isValidObjectId(productId)) {
-            return res.status(400).send({ status: false, message: "Invalid productId" })
+            return res.status(400).send({ status: false, message: "please give a valid productId" })
         }
 
 
-        let alreadyDeleted = await productModel.findOne({ _id: productId, isDeleted: false })
-        if (!alreadyDeleted) return res.status(404).send({ status: false, msg: "Data not found" })
+        let productFound = await productModel.findOne({ _id: productId, isDeleted: false })
+        if (!productFound) return res.status(404).send({ status: false, msg: "Product not found" })
 
         let { title, description, price, currencyId, currencyFormat, style, installments } = data
 
         if (!validator.isValidBody(data)) { return res.status(400).send({ status: false, msg: "Please enter data for update" }) }
         if (title)
-            if (!validator.isValid(title)) return res.status(400).send({ status: false, message: "title  must be alphabetic characters" })
+            if (!validator.isValid(title)) return res.status(400).send({ status: false, message: "title  must be in alphabets" })
         let isTitlePresent = await productModel.findOne({ title })
         if (isTitlePresent) return res.status(400).send({ status: false, message: "title is already present" })
 
         if (description)
 
-            if (!validator.isValid(description)) return res.status(400).send({ status: false, message: "description  must be alphabetic characters" })
+            if (!validator.isValid(description)) return res.status(400).send({ status: false, message: "description  must be in alphabets" })
 
         if (price)
             if (!/^[0-9 .]+$/.test(price)) return res.status(400).send({ status: false, message: "price must be in numeric" })
@@ -230,11 +230,12 @@ const updateProduct = async function (req, res) {
             if ((["₹"].indexOf(currencyFormat) == -1)) return res.status(400).send({ status: false, message: "currency formet must be ₹ " })
 
         if (style)
-            if (!validator.isValid(style)) return res.status(400).send({ status: false, message: "style must be alphabetic characters" })
+            if (!validator.isValid(style)) return res.status(400).send({ status: false, message: "style must be in alphabets" })
+
         if (data.availableSizes) {
             let sizes = data.availableSizes.split(/[\s,]+/)
             let arr = ["S", "XS", "M", "X", "L", "XXL", "XL"]
-            console.log(sizes)
+
             for (let i = 0; i < sizes.length; i++) {
                 if (arr.indexOf(sizes[i]) == -1)
                     return res.status(400).send({ status: false, message: "availabe sizes must be (S, XS,M,X, L,XXL, XL)" })
@@ -247,7 +248,7 @@ const updateProduct = async function (req, res) {
 
         let files = req.files;
         if (files && files.length > 0) {
-            let fileUrl = await uploadFile(files[0]);
+            let fileUrl = await aws.uploadFile(files[0]);
             data.productImage = fileUrl;
         }
 

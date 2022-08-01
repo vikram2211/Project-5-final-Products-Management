@@ -7,6 +7,18 @@ const isValid = function (value) {
     if (typeof value === "string" && value.trim().length === 0) return false
     return true
 };
+const isValidInput = function (value) {
+    if (typeof value === "undefined" || value === null) return false
+    if (typeof value === "string" && value.trim().length > 0) return true
+    return false;
+};
+
+
+const isValidAddress = function (value) {
+    if (typeof value === "undefined" || value === null) return false
+    if (typeof value === "object" && Array.isArray(value)===false && Object.keys(value).length>0) return true
+    return false
+}
 
 const isValidObjectId = function (value) {
     return mongoose.Types.ObjectId.isValid(value);
@@ -69,7 +81,10 @@ const isValidPassword = (value) =>{
     const re = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,16}$/
     return re.test(value)
 }
+ const isValidImageType = function (value) {
+    const regexForMimeTypes = /image\/png|image\/jpeg|image\/jpg/;
+    return regexForMimeTypes.test(value)
+ }
 
 
-
-module.exports = { isValid, isValidObjectId,isValidBody, isValidEmail, isValidNumber, isValidName, isValidPincode,isValidPrice ,isValidPassword};
+module.exports = { isValid,isValidAddress, isValidObjectId,isValidBody, isValidEmail, isValidNumber, isValidName, isValidPincode,isValidInput,isValidPrice ,isValidPassword,isValidImageType};
