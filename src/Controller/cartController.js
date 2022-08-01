@@ -1,8 +1,8 @@
 const cartModel = require("../model/cartModel");
 const validator = require("../validator/validator");
 const mongoose = require('mongoose');
-const { find } = require("../model/cartModel");
-
+const productModel = require("../model/productModel")
+const userModel = require("../model/userModel");
 
 const createCart = async function (req, res) {
 
@@ -61,12 +61,55 @@ const updateCart = async function (req, res) {
     }
     return res.status(200).send({ status: true, message: "Data updated successfuly", data: checkCartExist })
 }
+
+const deleteCart = async function (req, res) {
+    try {
+        let userId = req.params.userId;
+
+        //checking if the cart is present with this userId or not
+        let findCart = await cartModel.findOne({ userId: userId });
+        if (!findCart) return res.status(404).send({ status: false, message: `No cart found with this ${userId} userId` });
+
+        if (findCart.items.length == 0) {
+            return res.status(400).send({ status: false, message: "Cart is already empty" });
+        }
+
+        await cartModel.updateOne({ _id: findCart._id },
+            { items: [], totalPrice: 0, totalItems: 0 });
+
+        return res.status(200).send({ status: false, message: " cart Deleted Sucessfully" });
+
+
+    } catch (error) {
+        return res.status(500).send({ status: false, message: error.message });
+    }
+}
+
 const getCartDetails = async function (req, res) {
 
+    try {
+        let userId = req.params.userId
+    
+    
+        let userFound = await userModel.findById(userId)
+    
+        if (!userFound) { return res.status(404).send({ status: false, msg: 'user not found' }) }
+    
+        let userCheck= await cartModel.findOne({ userId: userId })
+    
+        if (!userCheck) {
+          return res.status(400).send({ status: false, msg: 'cart not found' })
+        }
+        let update = userCheck.items
+    
+        let itemData = update.map(({ productId, quantity }) => {
+          return { productId, quantity };
+        })
+        res.status(200).send({ status: true, msg: "success", data: { _id: userCheck._id, userId: userCheck.userId, items: itemData, totalPrice: userCheck.totalPrice, totalItems: userCheck.totalItems } })
+      } catch (err) {
+        res.status(500).send({ status: false, msg: err.message })
+      }
 }
-const deleteCart = async function (req, res) {
-
-}
 
 
-module.exports = { createCart, updateCart, getCartDetails, deleteCart }
+ module.exports = { createCart, updateCart, getCartDetails, deleteCart } 
