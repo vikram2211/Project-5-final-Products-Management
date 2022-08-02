@@ -31,6 +31,12 @@ const isValidObjectId = function (value) {
 const isValidBody = function (requestBody) {
     return Object.keys(requestBody).length > 0;
 }
+const isEmptyObject = function(body){
+    if(!body)
+    return true ;
+    if(Object.keys(body).length==0) return true;
+    return false
+}
 //********* Object.keys returns the array of an object && if empty null **************/
 // validation for mobile number
 
@@ -85,6 +91,7 @@ const isValidPassword = (value) =>{
     const regexForMimeTypes = /image\/png|image\/jpeg|image\/jpg/;
     return regexForMimeTypes.test(value)
  }
+ const isValidJson = (json)=>{return JSON.parse(json)}
 
 
-module.exports = { isValid,isValidAddress, isValidObjectId,isValidBody, isValidEmail, isValidNumber, isValidName, isValidPincode,isValidInput,isValidPrice ,isValidPassword,isValidImageType};
+module.exports = { isValid,isValidAddress, isValidObjectId,isValidBody, isValidEmail, isValidNumber, isValidName, isValidPincode,isValidInput,isValidPrice ,isValidPassword,isValidImageType,isValidJson,isEmptyObject};

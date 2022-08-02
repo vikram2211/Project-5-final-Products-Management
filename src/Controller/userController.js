@@ -9,63 +9,93 @@ const aws = require('../aws/aws');
 const createUser = async function (req, res) {
     try {
        
-        let requestBody = req.body
-        // let data = JSON.parse(JSON.stringify(req.body));
-        let { fname, lname, email, password, phone, address } = requestBody
+       // let requestBody = req.body
+       // let data = JSON.parse(JSON.stringify(req.body));
+       let data = req.body
+        let { fname, lname, email, password, phone, address } = data
         let files = req.files;
        
         
-        //     if (!validator.isValidBody(data)) {
-        //         return res.status(400).send({ status: false, msg: "User body should not be empty" });
-        //     }
+            if (!validator.isValidBody(data)) {
+                return res.status(400).send({ status: false, msg: "User body should not be empty" });
+            }
 
-        //     if (!validator.isValid(fname)) {
-        //         return res.status(400).send({ status: false, message: "fname should not be empty" })
-        //     }
+            if (!validator.isValid(fname)) {
+                return res.status(400).send({ status: false, message: "fname should not be empty" })
+            }
 
-        //     if (!validator.isValid(lname)) {
-        //         return res.status(400).send({ status: false, message: "lname should not be empty" })
-        //     }
+            if (!validator.isValid(lname)) {
+                return res.status(400).send({ status: false, message: "lname should not be empty" })
+            }
 
-        //     if (!validator.isValidEmail(email)) {
-        //         return res.status(400).send({ status: false, message: "Enter a valid E- mailID" })
-        //     }
+            if (!validator.isValidEmail(email)) {
+                return res.status(400).send({ status: false, message: "Enter a valid E- mailID" })
+            }
 
-        //     if (!validator.isValidPassword(password)) {
-        //         return res.status(400).send({ status: false, message: "password is not valid password should contain  8 -12,one lower case and upper case letter with special character" })
-        //     }
+            if (!validator.isValidPassword(password)) {
+                return res.status(400).send({ status: false, message: "password is not valid password should contain  8 -12,one lower case and upper case letter with special character" })
+            }
 
-        //     if (!validator.isValidNumber(phone)) {
-        //         return res.status(400).send({ status: false, msg: "Invalid phone number  ( it has to start with +91-)" })
-        //     }
+            if (!validator.isValidNumber(phone)) {
+                return res.status(400).send({ status: false, msg: "Invalid phone number  ( it has to start with +91-)" })
+            }
+            if(!validator.isValid(address))
+            return res.status(400).send({ status: false, msg: "please provide address"})
+            const addressObject = validator.isValidJson(address)
+            if (!addressObject) {
+                return res.status(400).send({ status: false, msg: "please provide address in json format"  })
 
-        // //    try{
-        //     // address = JSON.parse(address)
-        //     if (Object.keys(address)==0) {
-        //         return res.status(400).send({ status: false, message: "Address is required" })
-        //     }
+            }
+            let {shipping,billing} = addressObject
+            if(validator.isEmptyObject(shipping))
+            return res.status(400).send({ status: false, msg: "please provide shipping address"  })
+            if(!validator.isValid(shipping.street))
+            return res.status(400).send({ status: false, msg: "please provide shipping street"  })
+            if(!validator.isValid(shipping.city))
+            return res.status(400).send({ status: false, msg: "please provide shipping city"  })
 
-        //     if (!Object.keys(address.shipping)==3){ return res.status(400).send({ status: false, message: "Shipping address is required" })}
-
-        //     if (!Object.keys(address.billing)==3){ return res.status(400).send({ status: false, message: "billing address is required" })}
-
+            if(!validator.isValidPincode(shipping.pincode))
+            return res.status(400).send({ status: false, msg: "please provide shipping city"  })
 
 
-        //     if (!validator.isValid(address.shipping.street)) return res.status(400).status({ status: false, message: "please enter street for shipping address" });
+            if(validator.isEmptyObject(billing))
+            return res.status(400).send({ status: false, msg: "please provide billing address"  })
+            if(!validator.isValid(billing.street))
+            return res.status(400).send({ status: false, msg: "please provide billing street"  })
+            if(!validator.isValid(billing.city))
+            return res.status(400).send({ status: false, msg: "please provide billing city"  })
 
-        //     if (!validator.isValid(address.shipping.city)) return res.status(400).status({ status: false, message:"please enter city for shipping address"  });
+            if(!validator.isValidPincode(billing.pincode))
+            return res.status(400).send({ status: false, msg: "please provide billing pincode"  })
 
-        //     if (!/^[1-9][0-9]{5}$/.test(address.shipping.pincode)) return res.status(400).status({ status: false, message:  "please enter pincode for shipping address"  });
+            
+        //    try{
+            // address = JSON.parse(address)
+            // if (Object.keys(address)==0) {
+            //     return res.status(400).send({ status: false, message: "Address is required" })
+            // }
 
-        //     if (!validator.isValid(address.billing.street)) return res.status(400).status({ status: false, message:"please enter street for billing address"  });
+            // if (!Object.keys(address.shipping)==3){ return res.status(400).send({ status: false, message: "Shipping address is required" })}
 
-        //     if (!validator.isValid(address.billing.city)) return res.status(400).status({ status: false, message:  "please enter city for billing address"  });
+            // if (!Object.keys(address.billing)==3){ return res.status(400).send({ status: false, message: "billing address is required" })}
 
-        //     if (!/^[1-9][0-9]{5}$/.test(address.billing.pincode)) return res.status(400).status({ status: false, message: "please enter pincode for billing address" });
-        // // } 
-        // // catch(error){ 
-        // //     return res.status(400).send({ status: false, message: "catch address is not given" })
-        // // }
+
+
+            // if (!validator.isValid(address.shipping.street)) return res.status(400).status({ status: false, message: "please enter street for shipping address" });
+
+            // if (!validator.isValid(address.shipping.city)) return res.status(400).status({ status: false, message:"please enter city for shipping address"  });
+
+            // if (!/^[1-9][0-9]{5}$/.test(address.shipping.pincode)) return res.status(400).status({ status: false, message:  "please enter pincode for shipping address"  });
+
+            // if (!validator.isValid(address.billing.street)) return res.status(400).status({ status: false, message:"please enter street for billing address"  });
+
+            // if (!validator.isValid(address.billing.city)) return res.status(400).status({ status: false, message:  "please enter city for billing address"  });
+
+            // if (!/^[1-9][0-9]{5}$/.test(address.billing.pincode)) return res.status(400).status({ status: false, message: "please enter pincode for billing address" });
+        // } 
+        // catch(error){ 
+        //     return res.status(400).send({ status: false, message: "catch address is not given" })
+        // }
 
         let CheckEmail = await userModel.findOne({ email });
 
@@ -77,31 +107,31 @@ const createUser = async function (req, res) {
         if (CheckNumber) {
             return res.status(400).send({ status: false, message: `${phone} phone is already used` })
         }
-        address = JSON.parse(address)
-        const { shipping, billing } = address;
-        if(Object.keys(shipping).length<3) return res.status(400)
-        if (!validator.isValidAddress(shipping)) {
-            return res.status(400)
-        } else {
-            const { street, city, pincode } = shipping
+        // address = JSON.parse(address)
+        // const { shipping, billing } = address;
+        // if(Object.keys(shipping).length<3) return res.status(400)
+        // if (!validator.isValidAddress(shipping)) {
+        //     return res.status(400)
+        // } else {
+        //     const { street, city, pincode } = shipping
             
-             if (!validator.isValidInput(street)) return res.status(400).status({ status: false, message: "please enter street for shipping address" });
-             if (!validator.isValidInput(city)) return res.status(400).status({ status: false, message: "please enter street for shipping address" });
-             if (!/^[1-9][0-9]{5}$/.test(pincode)) return res.status(400).status({ status: false, message:  "please enter pincode for shipping address"  });
+        //      if (!validator.isValidInput(street)) return res.status(400).status({ status: false, message: "please enter street for shipping address" });
+        //      if (!validator.isValidInput(city)) return res.status(400).status({ status: false, message: "please enter street for shipping address" });
+        //      if (!/^[1-9][0-9]{5}$/.test(pincode)) return res.status(400).status({ status: false, message:  "please enter pincode for shipping address"  });
              
-        }
-        if (!validator.isValidAddress(billing)) {
-            return res.status(400)
-        } else {
-            const { street, city, pincode } = billing
+        // }
+        // if (!validator.isValidAddress(billing)) {
+        //     return res.status(400)
+        // } else {
+        //     const { street, city, pincode } = billing
             
-             if (!validator.isValidInput(street)) {
+        //      if (!validator.isValidInput(street)) {
 
-                 return res.status(400).status({ status: false, message: "please enter street for shipping address" });}
-             if (!validator.isValidInput(city)) return res.status(400).status({ status: false, message: "please enter street for shipping address" });
-             if (!/^[1-9][0-9]{5}$/.test(pincode)) return res.status(400).status({ status: false, message:  "please enter pincode for shipping address"  });
+        //          return res.status(400).status({ status: false, message: "please enter street for shipping address" });}
+        //      if (!validator.isValidInput(city)) return res.status(400).status({ status: false, message: "please enter street for shipping address" });
+        //      if (!/^[1-9][0-9]{5}$/.test(pincode)) return res.status(400).status({ status: false, message:  "please enter pincode for shipping address"  });
              
-        }
+        // }
 
       
         if (!files || files.length === 0) {
@@ -116,7 +146,7 @@ const createUser = async function (req, res) {
         let saltRounds = 8;
         const encryptPassword=await bcrypt.hash(password, saltRounds)
         const user = {
-            fname:fname.trim(),lname: lname.trim(), email:email.trim(), password:encryptPassword, phone:phone.trim(), address:address,profileImage: profileImage
+            fname:fname.trim(),lname: lname.trim(), email:email.trim(), password:encryptPassword, phone:phone.trim(), address:addressObject,profileImage: profileImage
         }
         // .then(function (hash) {
         //     requestBody.password = hash;
