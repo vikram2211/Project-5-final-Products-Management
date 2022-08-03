@@ -6,7 +6,115 @@ const userModel = require("../model/userModel");
 
 const createCart = async function (req, res) {
 
+    try {
+        const userId = req.params.userId
+        const requestBody = req.body;
+        const { quantity, productId } = requestBody
+        // let tokenUserId = req.userId;
+
+
+
+
+
+        /*============  isValidrequestBody checks  any keys is present or not in request body===========*/
+        const isValidRequestBody = function (requestBody) {
+            return Object.keys(requestBody).length > 0;
+        };
+        if (!isValidRequestBody(requestBody)) {
+            return res.status(400).send({ status: false, message: "Please provide valid request body" })
+        }
+        /*======Checking  userId is Valid ObjectId or Not ==============================================*/
+        if (!isValidObjectId(userId)) {
+            return res.status(400).send({ status: false, message: "Please provide valid User Id" })
+        }
+        if (!isValidObjectId(productId) || !isValid(productId)) {
+            return res.status(400).send({ status: false, message: "Please provide valid Product Id" })
+        }
+        /*========Whether the passed value is an integer (isInteger returns a Boolean)====================== */
+        const validQuantity = function isInteger(value) {
+            if (value < 1) return false
+            if (isNaN(Number(value))) return false //The isNaN() function determines whether a value is NaN or not.(NaN property is a value representing Not-A-Number.)
+            if (value % 1 == 0) return true
+        }
+        if (!isValid(quantity) || !validQuantity(quantity)) {
+            return res.status(400).send({ status: false, message: "Please provide valid quantity & it must be greater than zero." })
+        }
+        /*==================  Checking for User is DataBase ================================== */
+        const findUser = await userModel.findById({ _id: userId })
+        if (!findUser) {
+            return res.status(400).send({ status: false, message: `UseriD  doesn't exist (!  Entered userId ${userId})` })
+        }
+
+        // if (findUser._id != tokenUserId) {
+        //     return res.status(401).send({ status: false, message: "Unauthorized access! User's info doesn't match" }); //Authorisation
+
+        // }
+        /*==================  Checking for product present in dataBase ================================== */
+        const findProduct = await productModel.findOne({ _id: productId, isDeleted: false })
+        if (!findProduct) {
+            return res.status(400).send({ status: false, message: `Product doesn't exist (Entered product Id  ${productId})` })
+        }
+        /* ===================Checking user has already cart by taking user ID============================= */
+        const findCartOfUser = await cartModel.findOne({ userId: userId })
+
+        if (!findCartOfUser) {
+
+            /*===========Destructuring for the response body.====================================================*/
+            var cartData = {
+                userId: userId,
+                items: [{ productId: productId, quantity: quantity }],
+                totalPrice: findProduct.price * quantity,
+                totalItems: 1
+            };
+            /*======================================creating cart for User===================================*/
+            const createCart = await cartModel.create(cartData)
+            return res.status(201).send({ status: true, message: 'Cart created successfully', data: createCart })
+        }
+
+        if (findCartOfUser) {
+
+            /** =================Updating price when products get added ============================*/
+            let price = findCartOfUser.totalPrice + (req.body.quantity * findProduct.price)
+            let itemsArray = findCartOfUser.items
+
+            //updating quantity.
+
+
+            // for (key in object) {
+            //     // body of for...in
+            // }
+            for (i in itemsArray) {
+                if (itemsArray[i].productId == productId) {
+                    
+                    itemsArray[i].quantity += quantity
+
+                    let updatedCart = {
+                        items: itemsArray,
+                        totalPrice: price,
+                        totalItems: itemsArray.length
+                    }
+                    let Data = await cartModel.findOneAndUpdate({ _id: findCartOfUser._id }, updatedCart, { new: true })
+                    return res.status(200).send({ status: true, message: `Product added successfully to Cart`, data: Data })
+                }
+            }
+            /*==========storing the updated prices and quantity to the newly created array======*/
+            itemsArray.push({ productId: productId, quantity: quantity })
+
+            let updatedCart = {
+                items: itemsArray,
+                totalPrice: price,
+                totalItems: itemsArray.length
+            }
+            let Data = await cartModel.findOneAndUpdate({ _id: findCartOfUser._id }, updatedCart, { new: true })
+
+            return res.status(200).send({ status: true, message: 'Product added successfully to Cart', data: Data })
+        }
+    } catch (err) {
+        return res.status(500).send({ status: false, message: err.message })
+    }
+
 }
+
 const updateCart = async function (req, res) {
     let {cartId,productId, removeProduct } = req.body;
 
