@@ -21,7 +21,7 @@ const authentication = async function (req, res, next) {
                 if (Date.now() > decoded.exp * 1000) {
                     return res.status(401).send({ status: false, message: "token is expired" })
                 }
-                req.token = token
+                req.userId = decoded.userId
                 next();
             }
         })
@@ -35,20 +35,15 @@ const authentication = async function (req, res, next) {
 const Authorization = async function (req, res, next) {
     try {
 
-        let token = req.token
+        let tokenUserId = req.userId
         let userId = req.params.userId
-        let decodedToken = jwt.decode(token, "project5Group8")
-
-        // check the user id present in body
-
-        if (!validator.isValid(userId)) return res.status(400).send({ status: false, message: "userId is Required" });
-
+     
         if (!validator.isValidObjectId(userId)) return res.status(400).send({ status: false, message: "userId is not valid" });
 
         //check the  user id are present in decoded token
         let User = await userModel.findOne({_id:userId,isDeleted:false})
         if (!User) return res.status(404).send({ status: false, msg: "User not exist" })
-        if (userId != decodedToken.userId) { return res.status(401).send({ status: false, msg: "Not Authorised!!" }) }
+        if (userId != tokenUserId) { return res.status(403).send({ status: false, msg: "Not Authorised!!" }) }
 
         next()
     }

@@ -9,41 +9,40 @@ const createCart = async function (req, res) {
     try {
         const userId = req.params.userId
         const requestBody = req.body;
-        const { quantity, productId } = requestBody
+        const { quantity, productId , cartId} = requestBody
         // let tokenUserId = req.userId;
 
-
-
-
-
         /*============  isValidrequestBody checks  any keys is present or not in request body===========*/
-        const isValidRequestBody = function (requestBody) {
-            return Object.keys(requestBody).length > 0;
-        };
-        if (!isValidRequestBody(requestBody)) {
+        
+        if (Object.keys(requestBody).length==0) {
             return res.status(400).send({ status: false, message: "Please provide valid request body" })
         }
         /*======Checking  userId is Valid ObjectId or Not ==============================================*/
-        if (!isValidObjectId(userId)) {
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(400).send({ status: false, message: "Please provide valid User Id" })
         }
-        if (!isValidObjectId(productId) || !isValid(productId)) {
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
             return res.status(400).send({ status: false, message: "Please provide valid Product Id" })
         }
+        if(cartId)
+        if (!mongoose.Types.ObjectId.isValid(cartId)) {
+            return res.status(400).send({ status: false, message: "Please provide valid cart Id" })
+        }
         /*========Whether the passed value is an integer (isInteger returns a Boolean)====================== */
+        if(!quantity) quantity=1;
         const validQuantity = function isInteger(value) {
             if (value < 1) return false
             if (isNaN(Number(value))) return false //The isNaN() function determines whether a value is NaN or not.(NaN property is a value representing Not-A-Number.)
             if (value % 1 == 0) return true
         }
-        if (!isValid(quantity) || !validQuantity(quantity)) {
+        if (typeof quantity != "number" || !validQuantity(quantity)) {
             return res.status(400).send({ status: false, message: "Please provide valid quantity & it must be greater than zero." })
         }
-        /*==================  Checking for User is DataBase ================================== */
-        const findUser = await userModel.findById({ _id: userId })
-        if (!findUser) {
-            return res.status(400).send({ status: false, message: `UseriD  doesn't exist (!  Entered userId ${userId})` })
-        }
+        // /*==================  Checking for User in DataBase ================================== */
+        // const findUser = await userModel.findOne({ _id: userId,isDeleted: false })
+        // if (!findUser) {
+        //     return res.status(400).send({ status: false, message: `UseriD  doesn't exist (!  Entered userId ${userId})` })
+        // }
 
         // if (findUser._id != tokenUserId) {
         //     return res.status(401).send({ status: false, message: "Unauthorized access! User's info doesn't match" }); //Authorisation
@@ -54,15 +53,15 @@ const createCart = async function (req, res) {
         if (!findProduct) {
             return res.status(400).send({ status: false, message: `Product doesn't exist (Entered product Id  ${productId})` })
         }
-        /* ===================Checking user has already cart by taking user ID============================= */
-        const findCartOfUser = await cartModel.findOne({ userId: userId })
-
-        if (!findCartOfUser) {
-
+        /* ===================Checking user has already created cart by taking user ID============================= */
+        
+        
+        if (!cartId) {
+          let items = [{ productId:  productId, quantity }]
             /*===========Destructuring for the response body.====================================================*/
             var cartData = {
                 userId: userId,
-                items: [{ productId: productId, quantity: quantity }],
+                items: items,
                 totalPrice: findProduct.price * quantity,
                 totalItems: 1
             };
@@ -70,6 +69,10 @@ const createCart = async function (req, res) {
             const createCart = await cartModel.create(cartData)
             return res.status(201).send({ status: true, message: 'Cart created successfully', data: createCart })
         }
+    
+    const findCartOfUser = await cartModel.findById(cartId)
+    if(findCartOfUser.userId.toString() != userId)
+    return res.status(400).send({ status:false , message:` this cart does not belong to this userId ${userId}`})
 
         if (findCartOfUser) {
 
@@ -79,11 +82,7 @@ const createCart = async function (req, res) {
 
             //updating quantity.
 
-
-            // for (key in object) {
-            //     // body of for...in
-            // }
-            for (i in itemsArray) {
+            for ( let i=0;i<itemsArray.length ; i++) {
                 if (itemsArray[i].productId == productId) {
                     
                     itemsArray[i].quantity += quantity
@@ -110,6 +109,7 @@ const createCart = async function (req, res) {
             return res.status(200).send({ status: true, message: 'Product added successfully to Cart', data: Data })
         }
     } catch (err) {
+        console.log(err)
         return res.status(500).send({ status: false, message: err.message })
     }
 
