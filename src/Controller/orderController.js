@@ -1,7 +1,8 @@
 const orderModel = require('../models/orderModel')
 const cartModel = require('../models/cartModel')
 const userModel = require('../models/userModel')
-
+const validator = require("../validator/validator")
+const mongoose = require("mongoose")
 //1st Api - Creating Order
 
 const createOrder = async function (req,res) {
@@ -12,24 +13,30 @@ const createOrder = async function (req,res) {
         let tokenUserId = req.userId;
 
 
-        if (!isValidObjectId(userId)) {
-            return res.status(400).send({status:false,message:'userId is not a valid ObjectId'})
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).send({status:false,message:'userId is not a valid '})
         }
 
-        
-        if (!isValidRequestBody(requestBody)) {
-            return res.status(400).send({status:false,message:'Invalid Request Body'})
+        if (Object.keys(requestBody).length==0) {
+            return res.status(400).send({status:false,message:'please enter value in req body'})
         }
 
-        if(!isValid(cartId)) {
-            return res.status(400).send({status:false,message:'cartId is required'})
+        if(!mongoose.Types.ObjectId.isValid(cartId)) {
+            return res.status(400).send({status:false,message:'cartId is not valid '})
+        }
+        if (requestBody.hasOwnProperty("cancellable")) {
+            if (typeof cancellable != "boolean") {
+                return res.status(400).send({status: false,message: `Cancellable must be either 'true' or 'false'.`,});
+            }
         }
 
-        if(!isValidObjectId(cartId)) {
-            return res.status(400).send({status:false,message:'cartId is not valid ObjectId'})
+        if (requestBody.hasOwnProperty("status")) {
+            if (!(status=="pending"||status=="completed"||status=="cancelled")) {
+                return res.status(400).send({status: false,message: `Status must be among ['pending','completed','cancelled'].`,});
+            }
         }
 
-        const findUser = await userModel.findOne({_id:userId});
+        const findUser = await userModel.findOne({_id:userId,isDeleted:false});
 
         if(!findUser) {
             return res.status(404).send({status:false,message:'User does not Exist'})
@@ -38,29 +45,16 @@ const createOrder = async function (req,res) {
         //Authorisation
 
         if (findUser._id != tokenUserId) {
-            return res.status(401).send({status:false,message:'Unauthorised Access'})
+            return res.status(403).send({status:false,message:'Unauthorised Access'})
         }
 
-        const findCart = await cartModel.findOne({_id: cartId,userId: userId,});
+        const findCart = await cartModel.findOne({_id: cartId,userId: userId,isDeleted:false});
 
         if (!findCart) {
             return res.status(400).send({status: false,message: `Cart doesn't belongs to ${userId}`,});
         }
 
-        if (cancellable) {
-            if (typeof cancellable != "boolean") {
-                return res.status(400).send({status: false,message: `Cancellable must be either 'true' or 'false'.`,});
-            }
-        }
-
-        if (status) {
-            if (!isValidStatus(status)) {
-                return res.status(400).send({status: false,message: `Status must be among ['pending','completed','cancelled'].`,});
-            }
-        }
-        
-        const cartExists = await cartModel.findOne({_id:cartId})
-        if (cartExists.items.length == 0) {
+        if (findCart.items.length == 0) {
             return res.status(400).send({status:false,message:'No items in cart, Please put items in cart first'})
         }
 
