@@ -9,7 +9,7 @@ title: { type:String, required:true, trim:true, unique:true },
   
   currencyId: {type:String,  required:true},
 
-  currencyFormat: {type:String,  required:true},
+  currencyFormat: {type:String,  required:true,default:"₹"},
 
   isFreeShipping: {type:Boolean, default: false},
   

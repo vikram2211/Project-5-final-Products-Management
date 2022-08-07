@@ -84,7 +84,7 @@ const isValidPincode = function (value) {
 };
 const isValidPassword = (value) =>{
     if (typeof value === "undefined" || value === null) return false
-    const re = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,16}$/
+    const re = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,15}$/
     return re.test(value)
 }
  const isValidImageType = function (value) {
