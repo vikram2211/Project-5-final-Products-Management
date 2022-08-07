@@ -26,7 +26,7 @@ router.delete("/products/:productId", productController.deleteProduct);
 // API-Cart
 
 router.post("/users/:userId/cart",authentication,cartController.createCart);
-router.put("/users/:userId/cart ",authentication,Authorization,cartController.updateCart);
+router.put("/users/:userId/cart",authentication,cartController.updateCart);
 router.get("/users/:userId/cart",authentication,Authorization,cartController.getCartDetails);
 router.delete("/users/:userId/cart",authentication,Authorization,cartController.deleteCart);
 
