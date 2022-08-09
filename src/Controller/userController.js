@@ -41,7 +41,7 @@ const createUser = async function (req, res) {
         try {
             if (!validator.isValid(address))
                 return res.status(400).send({ status: false, msg: "please provide address" })
-            const addressObject = validator.isValidJson(address)
+            var addressObject = validator.isValidJson(address)
             if (!addressObject) {
                 return res.status(400).send({ status: false, msg: "please provide address in json format" })
 
